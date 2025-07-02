@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_Universal_FIFO" Id="{179c159a-418c-414b-ad60-8524eaa26188}">
+    <Declaration><![CDATA[INTERFACE I_Universal_FIFO
+]]></Declaration>
+    <Property Name="DataReady" Id="{d47fc6f1-460e-43b1-9a61-75574943c8da}">
+      <Declaration><![CDATA[PROPERTY DataReady : bool]]></Declaration>
+      <Get Name="Get" Id="{0955bdf1-cb78-4b45-be2f-99b69282ce7c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="HeadIndex" Id="{9323177d-4512-4cac-a7a1-00cfad7209a5}">
+      <Declaration><![CDATA[PROPERTY HeadIndex : Uint]]></Declaration>
+      <Get Name="Get" Id="{27fe590e-bc11-4c7a-a18f-7dc086ceaad8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="IsEmpty" Id="{872158b1-eb1e-4432-b8ff-4698366313dd}">
+      <Declaration><![CDATA[PROPERTY IsEmpty : bool]]></Declaration>
+      <Get Name="Get" Id="{9c9709f2-9878-4537-bbdf-4e19c6317013}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="IsFull" Id="{775ba57c-91be-4794-b2a3-e65c1f0e84aa}">
+      <Declaration><![CDATA[PROPERTY IsFull : bool]]></Declaration>
+      <Get Name="Get" Id="{13ce4fd0-111a-4605-9f52-253493734b45}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="MR_AckGetValue" Id="{28a090f9-bdd1-4dae-98b6-45090c3d538b}">
+      <Declaration><![CDATA[METHOD MR_AckGetValue : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="MR_Reset" Id="{0c78a48a-089d-4a88-9bc5-cd7c0bb83e6b}">
+      <Declaration><![CDATA[METHOD MR_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="TailIndex" Id="{f6ac5ba7-a6e0-45ec-894c-c003d62a3013}">
+      <Declaration><![CDATA[PROPERTY TailIndex : Uint]]></Declaration>
+      <Get Name="Get" Id="{d378bc32-bb23-4fab-97ff-775c3a6a0638}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

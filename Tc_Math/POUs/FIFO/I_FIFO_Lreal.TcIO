@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_FIFO_Lreal" Id="{862f69b4-f6b1-4309-9ad3-8274a314fd7e}">
+    <Declaration><![CDATA[INTERFACE I_FIFO_Lreal EXTENDS I_Universal_FIFO
+]]></Declaration>
+    <Method Name="MR_AddValue" Id="{b040e3fb-c913-40ab-bfa0-fb51cfbe9f0c}">
+      <Declaration><![CDATA[METHOD MR_AddValue : BOOL
+VAR_INPUT
+		Value : LREAL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="oOldestValue" Id="{c22e8437-2e77-4acc-9c0e-fc6cf62bb5fa}">
+      <Declaration><![CDATA[PROPERTY oOldestValue : Lreal]]></Declaration>
+      <Get Name="Get" Id="{cca51bca-b351-409a-8d93-94211498ba7b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

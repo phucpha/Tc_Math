@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_FIFO_TimeStruct" Id="{49862309-83e6-4415-9792-df6de9a23b3b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_FIFO_TimeStruct EXTENDS FB_Universal_FIFO IMPLEMENTS I_FIFO_Timestruct
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR_OUTPUT
+	OldestData : TIMESTRUCT;
+END_VAR
+VAR PERSISTENT
+	Queue : ARRAY[0..MaxQueueSize-1] OF TIMESTRUCT;  // FIFO queue (size is 100 elements)
+END_VAR
+VAR CONSTANT
+	timstructZero : TIMESTRUCT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="MR_AckGetValue" Id="{469ca031-426b-4e95-b81e-04281b693840}">
+      <Declaration><![CDATA[// if dataready return true, else return false
+METHOD  MR_AckGetValue : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.MR_AckGetValue();
+  OldestData := Queue[Tail];
+ MR_AckGetValue := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_AddValue" Id="{dd53c5cf-0992-4eea-a0d2-3fa5a516624d}">
+      <Declaration><![CDATA[METHOD MR_AddValue : BOOL
+VAR_INPUT
+		Value : TIMESTRUCT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[  IF Count < MaxQueueSize THEN
+            Queue[Head] := Value;
+            Head := (Head + 1) MOD MaxQueueSize;
+            Count := Count + 1;
+  ELSE
+            // FIFO is full, overwrite old data if needed
+            Tail := (Tail + 1) MOD MaxQueueSize;
+            Queue[Head] := Value;
+            Head := (Head + 1) MOD MaxQueueSize;
+            // Tail position is updated
+			
+  END_IF
+  
+  OldestData := Queue[Tail];
+  bDataReady := TRUE; 
+  
+  
+  MR_AddValue := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Reset" Id="{57edc372-1b46-49e8-a70f-89280654da9b}">
+      <Declaration><![CDATA[// need overide to reset oldestValue
+METHOD MR_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.MR_Reset();
+OldestData := timstructZero;
+MR_Reset := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="oOldestValue" Id="{62e77a2d-8dec-49d4-b503-a44431a1fea2}">
+      <Declaration><![CDATA[PROPERTY oOldestValue : TIMESTRUCT]]></Declaration>
+      <Get Name="Get" Id="{df9f67c3-fe90-4ee7-aa24-2b71f456ae41}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[oOldestValue := OldestData; ]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_FIFO_TimeStruct">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_TimeStruct.MR_AckGetValue">
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_TimeStruct.MR_AddValue">
+      <LineId Id="7" Count="10" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_TimeStruct.MR_Reset">
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_TimeStruct.oOldestValue.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

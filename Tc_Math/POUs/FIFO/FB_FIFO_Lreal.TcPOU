@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_FIFO_Lreal" Id="{8f3a32f0-7e00-4ebb-899d-be125261f986}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_FIFO_Lreal EXTENDS FB_Universal_FIFO IMPLEMENTS I_FIFO_Lreal
+VAR_OUTPUT
+	OldestData : LREAL;
+END_VAR
+VAR PERSISTENT
+	Queue : ARRAY[0..MaxQueueSize-1] OF LREAL;  // FIFO queue (size is 100 elements)
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+//    // Log new data only if LogData is TRUE
+//    IF rTrigLogData.Q THEN
+//        IF Count < MaxQueueSize THEN
+//            Queue[Head] := NewEnergyData;
+//            Head := (Head + 1) MOD MaxQueueSize;
+//            Count := Count + 1;
+//        ELSE
+//            // FIFO is full, overwrite old data if needed
+//            Tail := (Tail + 1) MOD MaxQueueSize;
+//            Queue[Head] := NewEnergyData;
+//            Head := (Head + 1) MOD MaxQueueSize;
+//            // Tail position is updated
+//        END_IF
+//        DataReady := TRUE;  // New data is now ready to be processed
+     
+//    END_IF
+
+    // Retrieve and manage oldest data for processing
+   
+]]></ST>
+    </Implementation>
+    <Method Name="MR_AckGetValue" Id="{09561704-badb-4272-b93c-ac7aae38809f}">
+      <Declaration><![CDATA[// if dataready return true, else return false
+METHOD  MR_AckGetValue : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.MR_AckGetValue();
+  OldestData := Queue[Tail];
+ MR_AckGetValue := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_AddValue" Id="{ffe5f7f4-ae52-4ecc-8755-2ab6cb8cfce7}">
+      <Declaration><![CDATA[METHOD MR_AddValue : BOOL
+VAR_INPUT
+		Value : LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[  IF Count < MaxQueueSize THEN
+            Queue[Head] := Value;
+            Head := (Head + 1) MOD MaxQueueSize;
+            Count := Count + 1;
+  ELSE
+            // FIFO is full, overwrite old data if needed
+            Tail := (Tail + 1) MOD MaxQueueSize;
+            Queue[Head] := Value;
+            Head := (Head + 1) MOD MaxQueueSize;
+            // Tail position is updated
+			
+  END_IF
+  
+  OldestData := Queue[Tail];
+  bDataReady := TRUE; 
+  
+  
+  MR_AddValue := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Reset" Id="{2a2b19b1-ebb1-4113-b1a5-5e202f98f473}">
+      <Declaration><![CDATA[// need overide to reset oldestValue
+METHOD MR_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.MR_Reset();
+OldestData := 0;
+MR_Reset := true;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="oOldestValue" Id="{98b612bb-2560-4227-bb88-040f3f05f6b2}">
+      <Declaration><![CDATA[PROPERTY oOldestValue : Lreal]]></Declaration>
+      <Get Name="Get" Id="{4db1abac-4d66-4251-875f-070beb6efbbf}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[oOldestValue := OldestData; ]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_FIFO_Lreal">
+      <LineId Id="73" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="133" Count="15" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_Lreal.MR_AckGetValue">
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_Lreal.MR_AddValue">
+      <LineId Id="7" Count="10" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_Lreal.MR_Reset">
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_FIFO_Lreal.oOldestValue.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

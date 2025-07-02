@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Universal_FIFO" Id="{131aa9e2-58e3-45de-aafa-ea99eafcfdb0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ABSTRACT FB_Universal_FIFO IMPLEMENTS I_Universal_FIFO
+
+VAR PERSISTENT    
+	//Queue : ARRAY[0..MaxQueueSize-1] OF REAL;  // FIFO queue (size is 100 elements)
+    Head : UINT := 0;  // Points to the next position to store data
+    Tail : UINT := 0;  // Points to the oldest data position
+    Count : UINT := 0;  // Number of elements currently in the FIFO
+	bDataReady : BOOL; 
+	eState : UINT;
+END_VAR
+
+VAR CONSTANT
+	MaxQueueSize : UINT := 255;  // Number of elements in the FIFO queue
+
+END_VAR
+
+VAR_OUTPUT
+
+   
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="CurrentCount" Id="{b394aead-437b-43a8-b08f-ed22975a952f}">
+      <Declaration><![CDATA[PROPERTY CurrentCount : Uint]]></Declaration>
+      <Get Name="Get" Id="{ea42aa8e-2694-4103-b382-20de3bb066f5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[CurrentCount := Count;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="DataReady" Id="{31648805-78a8-42f8-84a1-e6c84cdcf3f4}">
+      <Declaration><![CDATA[PROPERTY DataReady : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3a5c60e9-e41f-42ac-85af-ff42bc97f69f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[DataReady := bDataReady;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="HeadIndex" Id="{faa593cb-1d80-4bce-ba98-616aadf9d26e}">
+      <Declaration><![CDATA[PROPERTY HeadIndex : UINT]]></Declaration>
+      <Get Name="Get" Id="{af63df6c-26ce-49a6-84cc-3ba9e5d6a369}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[HeadIndex := Head;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="IsEmpty" Id="{6ac4853d-dd4b-4eab-ae86-df148cbd7815}">
+      <Declaration><![CDATA[PROPERTY IsEmpty : bool]]></Declaration>
+      <Get Name="Get" Id="{d3b4f330-ad27-4609-8b4b-bce8d522bd59}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF Count = 0 THEN
+	IsEmpty := TRUE;
+ELSE
+	IsEmpty := false;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="IsFull" Id="{9929d9b6-0d6d-4373-a85e-ad81b1b563c1}">
+      <Declaration><![CDATA[PROPERTY IsFull : bool]]></Declaration>
+      <Get Name="Get" Id="{de385dae-c82c-49f8-8b9e-9ac114441ac0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF count = MaxQueueSize THEN
+	IsFull := TRUE;
+ELSE 
+	IsFull := FALSE;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="MR_AckGetValue" Id="{34860b74-6277-47be-b023-8c9d2a9707a8}">
+      <Declaration><![CDATA[// if dataready return true, else return false// need overiding a part
+METHOD MR_AckGetValue : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bDataReady THEN
+      
+            // Data has been processed, so move to the next item in the queue
+            Tail := (Tail + 1) MOD MaxQueueSize;
+            Count := Count - 1;
+            IF Count = 0 THEN
+                bDataReady := FALSE;  // No more data to process
+            END_IF
+        
+            // Data is still ready to be processed
+        
+    MR_AckGetValue := TRUE;   
+ELSE 
+	MR_AckGetValue := FALSE;
+END_IF
+// set oldest value in child fb here
+// OldestData :=   Queue[Tail];
+/////]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Reset" Id="{573b5c3c-996e-49af-bd97-5cdc29213ede}">
+      <Declaration><![CDATA[// need overide to reset oldestValue
+METHOD MR_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[     Head := 0;
+     Tail := 0;
+     Count := 0;
+	 bDataReady := FALSE;
+	 MR_Reset := TRUE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="TailIndex" Id="{80acb226-1208-4672-938b-cb34f2e530e6}">
+      <Declaration><![CDATA[PROPERTY TailIndex : Uint]]></Declaration>
+      <Get Name="Get" Id="{e7da5146-61aa-4feb-8312-8b8046365c71}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[TailIndex := Tail;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_Universal_FIFO">
+      <LineId Id="25" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.CurrentCount.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.DataReady.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.HeadIndex.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.IsEmpty.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.IsFull.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.MR_AckGetValue">
+      <LineId Id="6" Count="11" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.MR_Reset">
+      <LineId Id="8" Count="4" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Universal_FIFO.TailIndex.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

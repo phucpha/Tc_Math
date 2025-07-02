@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_FIFO_Timestruct" Id="{7bc79695-e5a3-41c2-a4f1-3687535dd940}">
+    <Declaration><![CDATA[INTERFACE I_FIFO_Timestruct EXTENDS I_Universal_FIFO
+]]></Declaration>
+    <Method Name="MR_AddValue" Id="{ee64d589-d615-454d-9d0f-cfb797aa7ee1}">
+      <Declaration><![CDATA[METHOD MR_AddValue : BOOL
+VAR_INPUT
+		Value : TIMESTRUCT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="oOldestValue" Id="{2b94cc3f-a587-4e8f-87f0-b190525260f2}">
+      <Declaration><![CDATA[PROPERTY oOldestValue : TIMESTRUCT]]></Declaration>
+      <Get Name="Get" Id="{344c5bc6-881f-442f-8846-84dd4f51410d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

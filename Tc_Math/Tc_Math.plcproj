@@ -19,7 +19,7 @@
     <Company>NewEngineer</Company>
     <Released>false</Released>
     <Title>Tc_Math</Title>
-    <ProjectVersion>0.0.0.1</ProjectVersion>
+    <ProjectVersion>0.0.0.2</ProjectVersion>
     <LibraryCategories>
       <LibraryCategory xmlns="">
         <Id>{74d110c6-7213-4765-be2b-3ff0f1e344fb}</Id>
@@ -218,7 +218,8 @@
     <Placeholder>Tc_Math</Placeholder>
     <Author>https://github.com/phucpha</Author>
     <Description>this is library expand the Tc2_math</Description>
-    <DocFormat>reStructuredText</DocFormat>
+    <DocFormat>
+    </DocFormat>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DUTs\E_CompareTime.TcDUT">
@@ -263,11 +264,30 @@
     <Compile Include="POUs\FB_Derivative.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FIFO\FB_FIFO_Lreal.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FIFO\FB_FIFO_TimeStruct.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FIFO\FB_Universal_FIFO.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FIFO\I_FIFO_Lreal.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FIFO\I_FIFO_Timestruct.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FIFO\I_Universal_FIFO.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DUTs" />
     <Folder Include="GVLs" />
     <Folder Include="FCs" />
+    <Folder Include="POUs\FIFO" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
   </ItemGroup>
