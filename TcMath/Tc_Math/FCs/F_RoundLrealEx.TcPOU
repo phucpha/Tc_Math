@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_RoundLrealEx" Id="{0587239f-475c-4921-beb6-3f0e2e60f459}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_RoundLrealEx : LREAL
+VAR_INPUT
+	lrIn : LREAL;
+	iPrecision : UINT;
+END_VAR
+VAR
+	lrTemp	: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[lrTemp := lrIn * EXPT(10,iPrecision);
+lrTemp := LTRUNC(lrTemp);
+F_RoundLrealEx := lrTemp / EXPT(10,iPrecision);]]></ST>
+    </Implementation>
+    <LineIds Name="F_RoundLrealEx">
+      <LineId Id="7" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

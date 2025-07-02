@@ -1,0 +1,437 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_CalCulateAccumulation" Id="{e88953d9-7557-4b87-8986-671bc8cacda9}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Will be refactor later
+| need refactor to independence to fbMachineTime 
+*)
+FUNCTION_BLOCK FB_CalCulateAccumulation
+VAR_INPUT
+	lrAccumulator : LREAL  := 0;
+	CurrentTime : TIMESTRUCT; 
+END_VAR
+VAR_OUTPUT
+	accumulatedValueOut : LREAL;// value = lrAccumulator(timeNew) - lrAccumulator(timeOld)
+	previousTimestampOut : TIMESTRUCT;// TimeOld
+	bNewPeriodAlarm : BOOL;// Remain True in 30s if not be ackNowledge
+	
+END_VAR
+VAR
+
+	
+	eCpHour		: E_CompareTime;
+	eCpDay 		: E_CompareTime;
+	eCpMonth	: E_CompareTime;
+	eCpYear		: E_CompareTime;
+	eCpMinute	: E_CompareTime;
+	eSameTime : E_CompareTime;
+	eNewTime : E_CompareTime;
+	eRfTimeCompare : REFERENCE TO E_CompareTime;
+	sName 		: STRING;
+	eState : UINT;
+	TonRemainOutput : TON;
+	eTimeAccumulate : E_CompareTime;
+	bInit : BOOL;
+	bReset : BOOL;
+	bRequestUpdate_ValueInLastTime: BOOL;
+END_VAR
+
+VAR PERSISTENT 
+	bUpdatedValueLastHour : BOOL;// reject Power OFF unexpected
+	previousTimestamp	: TIMESTRUCT;
+	ValueInLastTime : LREAL;
+	accumulatedValue : LREAL;
+	
+	
+END_VAR
+VAR CONSTANT
+	eStateUinitialized : UINT := 0;
+	eStateInit : UINT := 10;
+	eStateRun : UINT := 20;
+	eStateReset : UINT := 100;
+	TimeNewPeriodAlarm : TIME := T#30s;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE eState OF
+	eStateUinitialized: // unInitialized
+		;// will go to eStateInit if MR_Run is called 
+		
+	eStateInit: 
+		;// will call by MR_Init
+		
+	eStateRun: //StateRun
+		MS_Run();
+		
+	eStateReset :
+		MS_Reset();
+END_CASE
+
+IF eState > 0 AND bReset THEN
+	eState := eStateReset;
+END_IF
+
+
+
+
+				
+]]></ST>
+    </Implementation>
+    <Property Name="isInitDone" Id="{baf29f36-37e5-4e03-90a8-83acb758cae9}">
+      <Declaration><![CDATA[PROPERTY isInitDone : bool]]></Declaration>
+      <Get Name="Get" Id="{eb1ad9fa-b80f-496a-9e0c-294f7bb30f95}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="isRuning" Id="{b0bffff6-c7a7-487b-9954-eb6741969d1a}">
+      <Declaration><![CDATA[PROPERTY isRuning : bool]]></Declaration>
+      <Get Name="Get" Id="{b9b38cce-1f09-4b53-94d5-da13439867d4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[isRuning := eState = eStateRun;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="MR_Acknowledge" Id="{758632cb-c0d1-4204-89c0-e713343b43f8}">
+      <Declaration><![CDATA[// if not return true , check the Current time and PreviousTime in fb
+METHOD MR_Acknowledge : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bNewPeriodAlarm := FALSE;
+IF eRfTimeCompare = eSameTime THEN
+	MR_Acknowledge := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Init" Id="{9e0ff53d-25f9-442f-9ae5-85a3c64ef9dc}">
+      <Declaration><![CDATA[METHOD MR_Init : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF eState = eStateUinitialized THEN// init;
+	bInit := true;
+	IF MS_Init() THEN
+		MR_Init := TRUE;
+		eState := eStateRun;
+	END_IF
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MR_Reset" Id="{db93c866-278c-46e2-90da-71947c36fb51}">
+      <Declaration><![CDATA[METHOD MR_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bReset := TRUE;
+IF eState = eStateUinitialized THEN
+	MR_Reset := TRUE;
+	bReset := false;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MS_Init" Id="{5248e55c-70a7-4639-8b20-338840b96134}">
+      <Declaration><![CDATA[METHOD Protected MS_Init : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE eTimeAccumulate OF
+	NEW_MINUTE :
+		eSameTime := SAME_MINUTE;
+		eNewTime := NEW_MINUTE;
+		eRfTimeCompare REF= eCpMinute;
+		MS_Init := TRUE;
+	NEW_HOUR :
+		eSameTime := SAME_HOUR;
+		eNewTime := NEW_HOUR;
+		eRfTimeCompare REF= eCpHour;
+		MS_Init := TRUE;
+	NEW_DAY	:
+		eSameTime := SAME_DAY;
+		eNewTime := NEW_DAY;
+		eRfTimeCompare REF= eCpDay;
+		MS_Init := TRUE;
+	NEW_MONTH:
+		eSameTime := SAME_MONTH;
+		eNewTime := NEW_MONTH;
+		eRfTimeCompare REF= eCpMonth;
+		MS_Init := TRUE;
+	NEW_YEAR:
+		eSameTime := SAME_YEAR;
+		eNewTime := NEW_YEAR;
+		eRfTimeCompare REF= eCpYear;
+		MS_Init := true;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MS_Reset" Id="{1ebd03bb-62e3-4baf-815b-eb3a5bff8e1f}">
+      <Declaration><![CDATA[METHOD protected MS_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//retainvalue
+	
+	bUpdatedValueLastHour := FALSE;
+	previousTimestamp.wYear := 0;
+	previousTimestamp.wMonth := 0;
+	previousTimestamp.wDay := 0;
+	previousTimestamp.wMinute := 0;
+	previousTimestamp.wSecond := 0;
+	previousTimestamp.wMilliseconds := 0;
+	ValueInLastTime := 0 ;
+	accumulatedValue := 0 ;
+// out_put
+	accumulatedValueOut := 0;
+	previousTimestampOut.wYear := 0;
+	previousTimestampOut.wMonth := 0;
+	previousTimestampOut.wDay := 0;
+	previousTimestampOut.wMinute := 0;
+	previousTimestampOut.wSecond := 0;
+	previousTimestampOut.wMilliseconds := 0;
+	bNewPeriodAlarm := false;// Remain True 
+	
+// 	RETURN TO uninit
+	eState := eStateUinitialized;
+	eRfTimeCompare REF= 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MS_Run" Id="{425779c7-a7a9-4d89-ac4b-70b3443dfd76}">
+      <Declaration><![CDATA[METHOD Protected MS_Run : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_CompareTime( 
+	timestruct1 := previousTimestamp,
+	timestruct2 := CurrentTime,
+	eCpMinute => eCpMinute, 
+	eCpHour => eCpHour,
+	eCpDay => eCpDay,
+	eCpMonth => eCpMonth,
+	ecpYear => eCpYear
+);
+
+IF eRfTimeCompare = eNewTime THEN
+	// update to output
+	accumulatedValueOut := accumulatedValue;
+	previousTimestampOut := previousTimestamp;
+	bNewPeriodAlarm := TRUE;
+	// update the the last hour and time
+	bUpdatedValueLastHour := FALSE;
+	IF lrAccumulator > 0.1 THEN
+		ValueInLastTime := lrAccumulator;
+		bRequestUpdate_ValueInLastTime := FALSE;
+		// UpdateOK
+		bUpdatedValueLastHour := TRUE;
+	ELSE
+		bRequestUpdate_ValueInLastTime := TRUE;
+	END_IF
+	ValueInLastTime := lrAccumulator;
+	previousTimestamp := CurrentTime;
+
+
+ELSIF eRfTimeCompare = eSameTime AND bUpdatedValueLastHour THEN
+	IF lrAccumulator > 0.1 THEN // reject the situation that just TURN ON IPC so lrAccumulator = -8888888888888888.444444444444
+		accumulatedValue := lrAccumulator - ValueInLastTime;
+	END_IF
+ELSIF eRfTimeCompare = eSameTime AND NOT bUpdatedValueLastHour THEN
+	ValueInLastTime := lrAccumulator;
+	previousTimestamp := CurrentTime;
+ELSE
+	; //invalid time Compare
+
+
+END_IF
+	
+TonRemainOutput( IN := bNewPeriodAlarm , PT := TimeNewPeriodAlarm);
+
+IF TonRemainOutput.Q THEN
+	bNewPeriodAlarm := false;
+END_IF
+IF bRequestUpdate_ValueInLastTime THEN
+	IF lrAccumulator > 0.1 THEN
+		ValueInLastTime := lrAccumulator;
+		bRequestUpdate_ValueInLastTime := FALSE;
+		// UpdateOK
+		bUpdatedValueLastHour := TRUE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Name" Id="{da2c83d9-017c-4216-91ff-fe91f8ac4eea}">
+      <Declaration><![CDATA[PROPERTY Name : string]]></Declaration>
+      <Get Name="Get" Id="{6250de71-2f33-43bc-9325-7a078cb8ea5a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Name := sName;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{9531a019-6e38-4ef9-a2fa-bfd5c6d8d7bd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sName := Name;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TimeAccumulate" Id="{d51af6cd-efa0-4798-aa7e-b0c560f53e33}">
+      <Declaration><![CDATA[// Set TimeAccumulate before call Mr_Init.
+//NEW_MINUTE := 5,
+//	NEW_HOUR := 10,
+//	NEW_DAY	:= 20,
+//	NEW_MONTH := 30,
+//	NEW_YEAR	:= 32,
+PROPERTY TimeAccumulate : E_CompareTime ]]></Declaration>
+      <Get Name="Get" Id="{fc144cbe-4c90-465f-9bb0-f544acf6053d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[TimeAccumulate := eTimeAccumulate;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e26844f1-07ec-44bd-abf0-a3fecb54d0a1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eTimeAccumulate := TimeAccumulate;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_CalCulateAccumulation">
+      <LineId Id="214" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="316" Count="0" />
+      <LineId Id="311" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="320" Count="1" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="324" Count="2" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="115" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="82" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.isInitDone.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.isRuning.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MR_Acknowledge">
+      <LineId Id="15" Count="2" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MR_Init">
+      <LineId Id="27" Count="1" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="39" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MR_Reset">
+      <LineId Id="5" Count="2" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MS_Init">
+      <LineId Id="6" Count="4" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="11" Count="3" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="15" Count="3" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="19" Count="3" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="23" Count="3" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MS_Reset">
+      <LineId Id="25" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="11" Count="4" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="4" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="26" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.MS_Run">
+      <LineId Id="25" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="26" Count="3" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="49" Count="4" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="15" Count="4" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="20" Count="2" />
+      <LineId Id="40" Count="2" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="56" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.Name.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.Name.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.TimeAccumulate.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CalCulateAccumulation.TimeAccumulate.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

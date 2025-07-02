@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_CubicFit" Id="{724792a7-1d26-45d7-bace-24ebfe04578b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CubicFit : BOOL
+VAR_INPUT
+    x : ARRAY[0..3] OF REAL; // x0, x1, x2, x3
+    y : ARRAY[0..3] OF REAL; // y0, y1, y2, y3
+END_VAR
+
+VAR_OUTPUT
+    a, b, c, d : REAL; // Polynomial coefficients
+END_VAR
+
+VAR
+    Arr : ARRAY[0..3] OF ARRAY [0..4] OF REAL; // Augmented matrix (4x5)
+    i, j, k : INT;
+    factor : REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Build the augmented matrix A
+FOR i := 0 TO 3 DO
+    Arr[i][0] := x[i] * x[i] * x[i]; // x^3
+    Arr[i][1] := x[i] * x[i];        // x^2
+    Arr[i][2] := x[i];               // x
+    Arr[i][3] := 1.0;                // constArrnt
+    Arr[i][4] := y[i];               // y value (RHS)
+END_FOR
+
+// Gauss-Jordan Elimination
+FOR i := 0 TO 3 DO
+    // Normalize row i
+    factor := Arr[i][ i];
+    FOR j := i TO 4 DO
+		IF NOT (-0.00000001 < factor  AND factor <  0.00000001) THEN
+        	Arr[i][j] := Arr[i][ j] / factor;
+		END_IF
+    END_FOR
+
+    // Eliminate other rows
+    FOR k := 0 TO 3 DO
+        IF k <> i THEN
+            factor := Arr[k][ i];
+            FOR j := i TO 4 DO
+                Arr[k][j] := Arr[k][ j] - factor * Arr[i][j];
+            END_FOR
+        END_IF
+    END_FOR
+END_FOR
+
+// Extract coefficients
+a := Arr[0][ 4];
+b := Arr[1][ 4];
+c := Arr[2][ 4];
+d := Arr[3][ 4];
+]]></ST>
+    </Implementation>
+    <LineIds Name="F_CubicFit">
+      <LineId Id="23" Count="13" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="38" Count="17" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

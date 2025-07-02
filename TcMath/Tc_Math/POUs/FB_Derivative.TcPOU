@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Derivative" Id="{f5b0ea50-b13d-4282-ba1b-824dc71cf18d}" SpecialFunc="None">
+    <Declaration><![CDATA[(*algorithm: Backward differentiation formula
+the higher other the less stable , but more accuracy*)
+FUNCTION_BLOCK FB_Derivative// unit : dentalvalue/seconde
+VAR_INPUT
+	bReset : BOOL	:= FALSE; //BOOL //reset
+	lrInputValue : LREAL;// actual function value
+	tDerivative	: TIME	:= T#1S; //length of time interval [tn−1,tn]  (equals time passed since last call to function)
+	nOrder		: UINT := 3;// The s-step or order in algorithm // recommend
+END_VAR
+VAR_OUTPUT
+	lrDerivative : LREAL;
+	xValid : BOOL;//Validity OF result FALSE: If the number of calls neccessary for approximating has not been executed yet.
+END_VAR
+VAR
+	ftn :LREAL;
+	ftn_1 : LREAL;
+	ftn_2 : LREAL;
+	ftn_3 : LREAL;
+	ftn_4 : LREAL;
+	ftn_5	: LREAL;
+	ftn_6	: LREAL;
+	tonUpdate : TON;
+	nTimeUpdate : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bReset THEN
+	tonUpdate.IN := FALSE;
+	ftn := 0 ;
+	ftn_1 := 0;
+	ftn_2 := 0;
+	ftn_3 := 0;
+	ftn_4 := 0;
+	ftn_5 := 0;
+	ftn_6 := 0;
+	nTimeUpdate := 0;
+END_IF
+
+tonUpdate( IN := TRUE,
+			PT := tDerivative);
+			
+IF tonUpdate.Q THEN
+	tonUpdate( IN := FALSE);
+	ftn_6 := ftn_5;
+	ftn_5 := ftn_4;
+	ftn_4 := ftn_3;
+	ftn_3 := ftn_2;
+	ftn_2 := ftn_1;
+	ftn_1 := ftn;
+	ftn := lrInputValue;
+	IF nTimeUpdate >= nOrder THEN
+		nTimeUpdate := nOrder;
+	ELSE 	
+		nTimeUpdate := nTimeUpdate + 1;
+	END_IF
+END_IF
+xValid := nTimeUpdate = nOrder;
+
+IF tDerivative > T#0S THEN
+	CASE nOrder OF
+		1:  lrDerivative := (ftn - ftn_1)/ (TIME_TO_LREAL(tDerivative)/1000);
+		2:  lrDerivative := (3*ftn - 4*ftn_1 + ftn_2)/ (2*TIME_TO_LREAL(tDerivative)/1000);
+		3:	lrDerivative := (3*(ftn-ftn_3) + ftn_1 - ftn_2)/ (10*TIME_TO_LREAL(tDerivative)/1000);
+		4:	lrDerivative :=	(25*ftn - 48*ftn_1 + 36*ftn_2 - 16*ftn_3 + 3*ftn_4)/ (12*TIME_TO_LREAL(tDerivative)/1000);
+		5:	lrDerivative :=	(137*ftn - 300*ftn_1 + 300*ftn_2 - 200*ftn_3 + 75*ftn_4 - 12*ftn_5 )/(60*TIME_TO_LREAL(tDerivative)/1000);
+		6:	lrDerivative :=	(147*ftn - 360*ftn_1 + 450*ftn_2 - 400*ftn_3 + 225*ftn_4 - 72*ftn_5 + 10*ftn_6)/(60*TIME_TO_LREAL(tDerivative)/1000);
+	END_CASE
+ELSE 
+	lrDerivative := -8888888888888.4444;
+	xValid := FALSE;
+	
+END_IF
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Derivative">
+      <LineId Id="45" Count="5" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="100" Count="1" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="68" Count="2" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="113" Count="4" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="104" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="59" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

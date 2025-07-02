@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_CompareTime" Id="{32075300-ba68-4315-8176-3ae124393eca}">
+    <Declaration><![CDATA[{attribute 'strict'}
+TYPE E_CompareTime :
+(
+	INVALID_PRE_TIME := 0,
+	NEW_MINUTE := 5,
+	NEW_HOUR := 10,
+	NEW_DAY	:= 20,
+	NEW_MONTH := 30,
+	NEW_YEAR	:= 32,
+	SAME_MINUTE := 35,
+	SAME_HOUR := 40,
+	SAME_DAY := 50,
+	SAME_MONTH := 60,
+	SAME_YEAR  := 70
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

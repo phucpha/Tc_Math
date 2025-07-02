@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_CompareTime" Id="{68e19a48-d985-42a5-8c69-91abe4122130}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CompareTime : E_CompareTime
+VAR_INPUT
+		timestruct1 : TIMESTRUCT;//TIMEPREVIOUS
+		timestruct2 : TIMESTRUCT;// TIME NOW
+END_VAR
+VAR_OUTPUT
+	eCpMinute	: E_CompareTime;
+	eCpHour		: E_CompareTime;
+	eCpDay		: E_CompareTime;
+	eCpMonth	: E_CompareTime;
+	ecpYear		: E_CompareTime;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF timestruct1.wYear < timestruct2.wYear THEN
+	F_CompareTime := NEW_YEAR;
+	ecpYear := NEW_YEAR;
+	eCpMonth := NEW_MONTH;
+	eCpDay := NEW_DAY;
+	eCpHour := NEW_HOUR;
+	eCpMinute := NEW_MINUTE;
+ELSIF timestruct1.wYear > timestruct2.wYear THEN
+		F_CompareTime := INVALID_PRE_TIME;
+ELSE 
+	ecpYear := SAME_YEAR;
+	IF timestruct1.wMonth < timestruct2.wMonth THEN
+		F_CompareTime := NEW_MONTH;
+		eCpMonth := NEW_MONTH;
+		eCpDay := NEW_DAY;
+		eCpHour := NEW_HOUR;
+		eCpMinute := NEW_MINUTE;
+	ELSIF  timestruct1.wMonth > timestruct2.wMonth THEN
+			F_CompareTime := INVALID_PRE_TIME;
+	ELSE
+		eCpMonth := SAME_MONTH;
+		IF timestruct1.wDay < timestruct2.wDay THEN
+			F_CompareTime := NEW_DAY;
+			eCpDay := NEW_DAY;
+			eCpHour := NEW_HOUR;
+			eCpMinute := NEW_MINUTE;
+		ELSIF timestruct1.wDay > timestruct2.wDay THEN
+			F_CompareTime := INVALID_PRE_TIME;
+		ELSE 
+			eCpDay := SAME_DAY;
+			IF timestruct1.wHour < timestruct2.wHour THEN
+				F_CompareTime := NEW_HOUR;
+				eCpHour := NEW_HOUR;
+				eCpMinute := NEW_MINUTE;
+			ELSIF timestruct1.wHour > timestruct2.wHour THEN
+				F_CompareTime := INVALID_PRE_TIME; 
+			ELSE
+				eCpHour := SAME_HOUR;
+				IF timestruct1.wMinute < timestruct2.wMinute THEN
+					F_CompareTime := NEW_MINUTE;
+					eCpMinute := NEW_MINUTE;
+				ELSIF timestruct1.wMinute > timestruct2.wMinute THEN
+					F_CompareTime := INVALID_PRE_TIME; 
+				ELSE
+					F_CompareTime := SAME_MINUTE;	
+					eCpMinute := SAME_MINUTE;
+			END_IF
+			END_IF
+		END_IF
+
+	END_IF
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="F_CompareTime">
+      <LineId Id="140" Count="50" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
