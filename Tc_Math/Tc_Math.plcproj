@@ -218,8 +218,7 @@
     <Placeholder>Tc_Math</Placeholder>
     <Author>https://github.com/phucpha</Author>
     <Description>this is library expand the Tc2_math</Description>
-    <DocFormat>
-    </DocFormat>
+    <DocFormat>reStructuredText</DocFormat>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DUTs\E_CompareTime.TcDUT">
