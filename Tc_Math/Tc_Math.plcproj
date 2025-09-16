@@ -19,7 +19,7 @@
     <Company>NewEngineer</Company>
     <Released>false</Released>
     <Title>Tc_Math</Title>
-    <ProjectVersion>0.0.0.2</ProjectVersion>
+    <ProjectVersion>1.1.1.0</ProjectVersion>
     <LibraryCategories>
       <LibraryCategory xmlns="">
         <Id>{74d110c6-7213-4765-be2b-3ff0f1e344fb}</Id>
@@ -326,6 +326,28 @@
           <d n="SubKeys" t="Hashtable" />
           <d n="Values" t="Hashtable" />
         </o>
+        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
+        <o>
+          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>UnicodeStrings</v>
+            <v>False</v>
+          </d>
+        </o>
+        <v>{29BD8D0C-3586-4548-BB48-497B9A01693F}</v>
+        <o>
+          <v n="Name">"{29BD8D0C-3586-4548-BB48-497B9A01693F}"</v>
+          <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+            <v>Rules</v>
+            <o>
+              <v n="Name">"Rules"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
+          </d>
+          <d n="Values" t="Hashtable" />
+        </o>
         <v>{8F99A816-E488-41E4-9FA3-846536012284}</v>
         <o>
           <v n="Name">"{8F99A816-E488-41E4-9FA3-846536012284}"</v>
@@ -346,6 +368,7 @@
     </o>
         </Data>
         <TypeList>
+          <Type n="Boolean">System.Boolean</Type>
           <Type n="Hashtable">System.Collections.Hashtable</Type>
           <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
           <Type n="String">System.String</Type>
